@@ -1,3 +1,3 @@
 [
-  { "name": "mello", "token_secret": "IG_TOKEN_MELLO", "timezone": "America/New_York" }
+  { "name": "mello", "username": "mello.teas", "token_secret": "IG_TOKEN_MELLO", "timezone": "America/New_York" }
 ]

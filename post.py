@@ -28,6 +28,29 @@ def call(method, path, **params):
         raise SystemExit(f"{method} {path} failed: {e.code} {e.read().decode()[:500]}")
 
 
+def soft(path, token, **params):
+    try:
+        return call("GET", path, access_token=token, **params)
+    except SystemExit as e:
+        print(f"    ({str(e)[:160]})")
+        return {}
+
+
+def find_ig_id(token, want):
+    """Look up the Instagram account a system-user token can manage (read-only calls)."""
+    found = []
+    for p in soft("me/accounts", token, fields="instagram_business_account{id,username}").get("data", []):
+        ig = p.get("instagram_business_account")
+        if ig: found.append(ig)
+    for b in soft("me/businesses", token, fields="id,name").get("data", []):
+        for edge in ("instagram_accounts", "owned_instagram_accounts"):
+            found += soft(f"{b['id']}/{edge}", token, fields="id,username").get("data", [])
+    for ig in found:
+        print(f"    found Instagram account @{ig.get('username')} id={ig.get('id')}")
+    match = [ig for ig in found if ig.get("username") == want] or found
+    return match[0]["id"] if match else ""
+
+
 def todays_row(folder, day):
     with open(os.path.join(folder, "captions.csv"), encoding="utf-8-sig") as f:
         for row in csv.DictReader(f):
@@ -61,7 +84,9 @@ def publish(acct):
         # system-user token: the Instagram account ID comes from config or a secret
         uid = acct.get("ig_user_id") or os.environ.get(acct["token_secret"].replace("IG_TOKEN", "IG_USER_ID"), "")
         if not uid:
-            raise SystemExit(f"[{name}] system-user token needs ig_user_id in accounts.json")
+            uid = find_ig_id(token, acct.get("username", ""))
+        if not uid:
+            raise SystemExit(f"[{name}] couldn't find the Instagram account for this token; add ig_user_id to accounts.json")
         me = call("GET", uid, fields="username", access_token=token)
     else:
         me = call("GET", "me", fields="user_id,username", access_token=token)
