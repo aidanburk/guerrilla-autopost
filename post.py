@@ -52,10 +52,11 @@ def publish(acct):
         print(f"[{name}] {day} already posted"); return
     image_url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/accounts/{name}/posts/{urllib.parse.quote(row['file'])}"
     print(f"[{name}] {day}: {row['file']}\n  {image_url}")
-    if DRY:
-        print("  dry run, not posting"); return
     if not token:
+        if DRY:
+            print("  dry run, no token set"); return
         raise SystemExit(f"[{name}] missing secret {acct['token_secret']}")
+    print(f"  token type: {'system-user (never expires)' if token.startswith('EAA') else 'Instagram login (60 days)' if token.startswith('IG') else 'unrecognized'}")
     if token.startswith("EAA"):
         # system-user token: the Instagram account ID comes from config or a secret
         uid = acct.get("ig_user_id") or os.environ.get(acct["token_secret"].replace("IG_TOKEN", "IG_USER_ID"), "")
@@ -65,6 +66,9 @@ def publish(acct):
     else:
         me = call("GET", "me", fields="user_id,username", access_token=token)
         uid = me["user_id"]
+    print(f"  key works for @{me.get('username')}")
+    if DRY:
+        print("  dry run, not posting"); return
     created = call("POST", f"{uid}/media", image_url=image_url, caption=row["caption"], access_token=token)
     cid = created["id"]
     for _ in range(20):  # wait for Instagram to finish fetching the image
