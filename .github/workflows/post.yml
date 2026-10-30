@@ -16,6 +16,7 @@ jobs:
       - run: python post.py
         env:
           IG_TOKEN_MELLO: ${{ secrets.IG_TOKEN_MELLO }}
+          IG_USER_ID_MELLO: ${{ secrets.IG_USER_ID_MELLO }}
           POST_DATE: ${{ inputs.date }}
           DRY_RUN: ${{ inputs.dry_run }}
       - name: Save posted log

@@ -8,7 +8,8 @@ Posts one Instagram image a day for each account in `accounts.json`, using the I
 
 ## Secrets (Settings → Secrets and variables → Actions)
 - `IG_TOKEN_MELLO`: the @mello.teas access token from the Meta app dashboard.
-- `SECRETS_PAT`: a fine-grained personal access token for this repo with **Secrets: read and write**, so the refresh job can save the new token.
+- `IG_USER_ID_MELLO`: only for a never-expiring system-user token (starts with `EAA`); the Instagram account's ID.
+- `SECRETS_PAT` (only for 60-day Instagram-login tokens): a fine-grained personal access token for this repo with **Secrets: read and write**, so the refresh job can save the new token.
 
 ## Adding an account
 1. Add the Instagram account as an Instagram Tester on the Meta app and generate its token.
