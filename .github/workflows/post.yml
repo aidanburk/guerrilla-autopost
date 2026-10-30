@@ -1,0 +1,25 @@
+name: Post today
+on:
+  schedule:
+    - cron: "0 16 * * *"   # about 12 PM Eastern (11 AM in winter)
+  workflow_dispatch:
+    inputs:
+      date: { description: "Post a specific date (YYYY-MM-DD), blank = today", required: false }
+      dry_run: { description: "1 = show what would post, don't publish", required: false, default: "0" }
+permissions:
+  contents: write
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python post.py
+        env:
+          IG_TOKEN_MELLO: ${{ secrets.IG_TOKEN_MELLO }}
+          POST_DATE: ${{ inputs.date }}
+          DRY_RUN: ${{ inputs.dry_run }}
+      - name: Save posted log
+        run: |
+          git config user.name "autopost-bot"; git config user.email "autopost-bot@users.noreply.github.com"
+          git add accounts/*/posted.log 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "Log posts $(date -u +%F)" && git push)
