@@ -13,9 +13,10 @@ jobs:
         env:
           IG_TOKEN_MELLO: ${{ secrets.IG_TOKEN_MELLO }}
       - name: Store refreshed token
+        if: steps.r.outputs.IG_TOKEN_MELLO != ''
         env:
           GH_TOKEN: ${{ secrets.SECRETS_PAT }}
           NEW: ${{ steps.r.outputs.IG_TOKEN_MELLO }}
         run: |
           echo "::add-mask::$NEW"
-          [ -n "$NEW" ] && gh secret set IG_TOKEN_MELLO --body "$NEW" --repo "$GITHUB_REPOSITORY"
+          gh secret set IG_TOKEN_MELLO --body "$NEW" --repo "$GITHUB_REPOSITORY"
