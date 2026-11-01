@@ -23,4 +23,4 @@ jobs:
         run: |
           git config user.name "autopost-bot"; git config user.email "autopost-bot@users.noreply.github.com"
           git add accounts/*/posted.log 2>/dev/null || true
-          git diff --cached --quiet || (git commit -m "Log posts $(date -u +%F)" && git push)
+          git diff --cached --quiet || (git commit -m "Log posts $(date -u +%F)" && (git push || (git pull --rebase && git push)))
