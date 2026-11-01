@@ -1,0 +1,43 @@
+name: Deploy Mello AI
+on:
+  push:
+    branches: [main]
+    paths: ["mello-ai/**", ".github/workflows/deploy-mello-ai.yml"]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mello-ai
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci
+      - run: npm test
+      - name: Find or create the storage space
+        run: |
+          find_id() { npx wrangler kv namespace list | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const n=JSON.parse(s.slice(s.indexOf("["))).find(x=>x.title==="mello-ai-kv");process.stdout.write(n?n.id:"")})'; }
+          id=$(find_id)
+          if [ -z "$id" ]; then npx wrangler kv namespace create mello-ai-kv >/dev/null; id=$(find_id); fi
+          [ -n "$id" ] || { echo "Couldn't create the KV namespace"; exit 1; }
+          sed -i "s/__KV_ID__/$id/" wrangler.toml
+      - run: npx wrangler deploy
+      - name: Pass secrets to the Worker
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GA_SA_KEY: ${{ secrets.GA_SA_KEY }}
+          GA_PROPERTY_ID: ${{ secrets.GA_PROPERTY_ID }}
+          IG_TOKEN: ${{ secrets.IG_TOKEN_MELLO }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID_MELLO }}
+          LEAD_TO: ${{ secrets.MELLO_LEAD_TO }}
+          REPORT_TO: ${{ secrets.MELLO_REPORT_TO }}
+          ADMIN_KEY: ${{ secrets.MELLO_ADMIN_KEY }}
+        run: |
+          node -e 'const k=["RESEND_API_KEY","GA_SA_KEY","GA_PROPERTY_ID","IG_TOKEN","IG_USER_ID","LEAD_TO","REPORT_TO","ADMIN_KEY"];const o={};for(const n of k)if(process.env[n])o[n]=process.env[n];require("fs").writeFileSync("/tmp/secrets.json",JSON.stringify(o));console.log("setting:",Object.keys(o).join(", ")||"none")'
+          npx wrangler secret bulk /tmp/secrets.json
+          rm -f /tmp/secrets.json
