@@ -2,7 +2,8 @@
 // Written as a plain function so it stays readable; the Worker serves its source with the API address filled in.
 
 export function widget(api) {
-  return `(${askMello.toString()})(${JSON.stringify(api)});`;
+  // The bundler adds __name(...) calls inside functions; define it so the source runs in the browser.
+  return `(function(){var __name=function(f){return f};(${askMello.toString()})(${JSON.stringify(api)});})();`;
 }
 
 function askMello(API) {
