@@ -1,0 +1,20 @@
+name = "mello-ai"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "MELLO_KV"
+id = "__KV_ID__"   # filled in by the deploy workflow
+
+[triggers]
+crons = ["0 13 * * 1"]   # Mondays 13:00 UTC = 8am Eastern in winter, 9am in summer
+
+[vars]
+ALLOWED_ORIGINS = "https://melloteas.com,https://www.melloteas.com,*.framer.app,*.framer.website"
+MAIL_FROM = "Mello AI <ai@melloteas.com>"
+AI_DAILY_CAP = "150"       # AI replies per day across all visitors (stays inside the free allowance)
+CHAT_PER_VISITOR = "40"    # messages per visitor per day
+SHOP_EVENT = ""            # GA event name for shop clicks; blank = guess from names like "shop"/"outbound"
