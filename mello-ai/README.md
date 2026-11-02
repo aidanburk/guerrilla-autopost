@@ -1,8 +1,9 @@
 # Mello AI
 
-Two free AI pieces for Mello Brands, running as one Cloudflare Worker:
+Three free AI pieces for Mello Brands, running as one Cloudflare Worker:
 
 - **Ask Mello**: a chat bubble on melloteas.com. It recommends teas and jerky with Square links, lists upcoming markets, and collects kettle corn catering and wholesale requests, which it emails to Mello.
+- **Mello Helper** (`/helper?k=...`): Tomy's private phone page. It shows every request with an AI-written reply he can text or email in one tap, marks requests replied, booked or no, shows this week's numbers, and lets him add markets the chat will mention.
 - **Monday email**: every Monday morning Tomy gets last week's website visits, shop clicks, Instagram posts, new requests, and what customers asked, plus 1 or 2 AI-written to-dos. The numbers are printed by code, and the AI only writes the note.
 
 Everything runs on free plans with no card on file: Cloudflare Workers, Workers AI and KV, plus Resend for email. If a free limit is hit, the service pauses for the day instead of billing. Chat use is capped at `AI_DAILY_CAP` replies per day.
@@ -27,6 +28,7 @@ Pushing to `main` deploys automatically (`.github/workflows/deploy-mello-ai.yml`
    - `MELLO_LEAD_TO`: where requests go (your email while testing, then `melloholdingsllc@gmail.com`)
    - `MELLO_REPORT_TO`: where the Monday email goes (same idea)
    - `MELLO_ADMIN_KEY`: any long random password, used for the preview link below
+   - `MELLO_HELPER_KEY`: another long random password. Tomy's Mello Helper link is `https://mello-ai.<you>.workers.dev/helper?k=<this>`, and he adds it to his phone's home screen.
 2. **Resend (free):** sign up at resend.com, add the domain `melloteas.com`, and copy the DNS records it shows into Squarespace DNS. They go on `send.melloteas.com` and `resend._domainkey`, so the existing records stay untouched. Create an API key and add it as the `RESEND_API_KEY` secret. Until the domain is verified, set `MAIL_FROM` in `wrangler.toml` to `Mello AI <onboarding@resend.dev>`; Resend then only delivers to your own signup email.
 3. **Google Analytics (free):** in Google Cloud, create a project, enable the *Google Analytics Data API*, create a service account, and download its JSON key. Add the service account's email as a **Viewer** in GA (Admin → Property access management). Add secrets `GA_SA_KEY` (the whole JSON) and `GA_PROPERTY_ID` (Admin → Property details). If shop clicks show 0, put the shop-click event's exact name in `SHOP_EVENT`.
 4. **Instagram** reuses the existing `IG_TOKEN_MELLO` and `IG_USER_ID_MELLO` secrets.

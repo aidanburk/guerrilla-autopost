@@ -1,6 +1,7 @@
 // Mello AI: the "Ask Mello" chat on melloteas.com and Tomy's Monday email.
 // Runs as one Cloudflare Worker on the free plan (Workers AI + KV + cron).
-import { systemPrompt, upcomingEvents, prettyDate } from "./knowledge.js";
+import { systemPrompt, upcomingEvents, prettyDate, allEvents } from "./knowledge.js";
+import { helperRoute } from "./helper.js";
 import { widget } from "./widget.js";
 import { weeklyReport } from "./report.js";
 import { sendEmail, esc } from "./email.js";
@@ -23,6 +24,7 @@ export default {
       if (url.pathname === "/chat" && req.method === "POST") return json(await chat(req, env), cors);
       if (url.pathname === "/lead" && req.method === "POST") return json(await lead(req, env, ctx), cors);
       if (url.pathname === "/report") return await reportRoute(url, env);
+      if (url.pathname === "/helper" || url.pathname.startsWith("/api/")) return await helperRoute(req, url, env);
       if (url.pathname === "/") return new Response("Ask Mello is running.", { headers: { "content-type": "text/plain" } });
       return new Response("Not found", { status: 404 });
     } catch (e) {
@@ -58,7 +60,7 @@ async function chat(req, env) {
   let text = "";
   try {
     const out = await env.AI.run(MODEL, {
-      messages: [{ role: "system", content: systemPrompt(today) }, ...msgs],
+      messages: [{ role: "system", content: systemPrompt(today, await allEvents(env)) }, ...msgs],
       max_tokens: 320,
       temperature: 0.4,
     });
@@ -97,7 +99,7 @@ async function lead(req, env, ctx) {
   const today = todayET();
   if (!(await underLimit(env, `rl:lead:${today}:${ip}`, 5))) return { ok: false, error: "Thanks! We already have your request." };
 
-  const rec = { type, at: new Date().toISOString(), ...fields };
+  const rec = { type, at: new Date().toISOString(), status: "new", ...fields };
   await env.MELLO_KV.put(`lead:${today}:${crypto.randomUUID().slice(0, 8)}`, JSON.stringify(rec), { expirationTtl: 60 * 60 * 24 * 120 });
 
   const rows = LEAD_FIELDS[type].filter(([k]) => fields[k]).map(([k, label]) =>

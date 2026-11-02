@@ -37,7 +37,8 @@ jobs:
           LEAD_TO: ${{ secrets.MELLO_LEAD_TO }}
           REPORT_TO: ${{ secrets.MELLO_REPORT_TO }}
           ADMIN_KEY: ${{ secrets.MELLO_ADMIN_KEY }}
+          HELPER_KEY: ${{ secrets.MELLO_HELPER_KEY }}
         run: |
-          node -e 'const k=["RESEND_API_KEY","GA_SA_KEY","GA_PROPERTY_ID","IG_TOKEN","IG_USER_ID","LEAD_TO","REPORT_TO","ADMIN_KEY"];const o={};for(const n of k)if(process.env[n])o[n]=process.env[n];require("fs").writeFileSync("/tmp/secrets.json",JSON.stringify(o));console.log("setting:",Object.keys(o).join(", ")||"none")'
+          node -e 'const k=["RESEND_API_KEY","GA_SA_KEY","GA_PROPERTY_ID","IG_TOKEN","IG_USER_ID","LEAD_TO","REPORT_TO","ADMIN_KEY","HELPER_KEY"];const o={};for(const n of k)if(process.env[n])o[n]=process.env[n];require("fs").writeFileSync("/tmp/secrets.json",JSON.stringify(o));console.log("setting:",Object.keys(o).join(", ")||"none")'
           npx wrangler secret bulk /tmp/secrets.json
           rm -f /tmp/secrets.json

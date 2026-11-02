@@ -1,11 +1,11 @@
 // Tomy's Monday email. Numbers come straight from the sources and are printed by code;
 // the AI only writes the short "what it means" note and this week's 1-2 to-dos.
-import { upcomingEvents, prettyDate } from "./knowledge.js";
+import { upcomingEvents, prettyDate, allEvents } from "./knowledge.js";
 import { sendEmail, esc } from "./email.js";
 
 const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 
-export async function weeklyReport(env, { send = false, to } = {}) {
+export async function gatherStats(env) {
   const end = new Date(Date.now() - 864e5);           // yesterday
   const start = new Date(Date.now() - 7 * 864e5);
   const iso = (d) => d.toLocaleDateString("en-CA", { timeZone: "America/New_York" });
@@ -17,8 +17,12 @@ export async function weeklyReport(env, { send = false, to } = {}) {
     kvSince(env, "lead:", range.start).then((rows) => rows.map((r) => JSON.parse(r))),
     kvSince(env, "q:", range.start),
   ]);
-  const events = upcomingEvents(iso(new Date())).filter(([d]) => d <= iso(new Date(Date.now() + 21 * 864e5)));
-  const stats = { range, ga, ig, leads, questions, events };
+  const events = upcomingEvents(iso(new Date()), await allEvents(env)).filter(([d]) => d <= iso(new Date(Date.now() + 21 * 864e5)));
+  return { range, ga, ig, leads, questions, events };
+}
+
+export async function weeklyReport(env, { send = false, to } = {}) {
+  const stats = await gatherStats(env);
   const ai = await aiNote(env, stats).catch((e) => (console.error("AI note failed", e), null));
   const html = render(stats, ai);
   const subject = subjectLine(stats);

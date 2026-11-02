@@ -178,3 +178,36 @@ test("Google Analytics: signs in with the service account and reads this week vs
     assert.match(r.html, /Google search 30/);
   } finally { globalThis.fetch = orig; }
 });
+
+test("Mello Helper: locked without the key, lists leads, sets status, drafts a reply", async () => {
+  const e = env({ HELPER_KEY: "tomy123" });
+  assert.equal((await worker.fetch(new Request("https://x.dev/helper"), e, ctx())).status, 404);
+  assert.equal((await worker.fetch(new Request("https://x.dev/api/leads?k=nope"), e, ctx())).status, 404);
+  const page = await worker.fetch(new Request("https://x.dev/helper?k=tomy123"), e, ctx());
+  assert.match(await page.text(), /Mello Helper/);
+  await worker.fetch(post("/lead", { type: "catering", name: "Jen", contact: "412-555-0100", date: "Dec 14" }), e, ctx());
+  const leads = await (await worker.fetch(new Request("https://x.dev/api/leads?k=tomy123"), e, ctx())).json();
+  assert.equal(leads.length, 1);
+  assert.equal(leads[0].status, "new");
+  const id = encodeURIComponent(leads[0].id);
+  const upd = await (await worker.fetch(new Request(`https://x.dev/api/leads/${id}?k=tomy123`, { method: "POST", body: JSON.stringify({ status: "booked" }) }), e, ctx())).json();
+  assert.equal(upd.status, "booked");
+  e.AI.next = "Hi Jen, thanks so much! Tomy, Mello Brands";
+  const d = await (await worker.fetch(new Request(`https://x.dev/api/leads/${id}/draft?k=tomy123`, { method: "POST", body: "{}" }), e, ctx())).json();
+  assert.match(d.draft, /Hi Jen/);
+  assert.equal(d.status, "booked", "draft keeps status");
+});
+
+test("Mello Helper: added events reach the website chat", async () => {
+  const e = env({ HELPER_KEY: "tomy123" });
+  const bad = await worker.fetch(new Request("https://x.dev/api/events?k=tomy123", { method: "POST", body: JSON.stringify({ name: "x" }) }), e, ctx());
+  assert.equal(bad.status, 400);
+  await worker.fetch(new Request("https://x.dev/api/events?k=tomy123", { method: "POST", body: JSON.stringify({ date: "2099-12-13", name: "Elf Fair", place: "Fire Hall", town: "Clairton, PA" }) }), e, ctx());
+  const list = await (await worker.fetch(new Request("https://x.dev/api/events?k=tomy123"), e, ctx())).json();
+  assert.ok(list.some((x) => x.name === "Elf Fair" && x.mine));
+  await worker.fetch(post("/chat", { messages: [{ role: "user", content: "where are you next?" }] }), e, ctx());
+  assert.match(e.AI.calls.at(-1).messages[0].content, /Elf Fair, Fire Hall, Clairton, PA/);
+  await worker.fetch(new Request("https://x.dev/api/events?k=tomy123", { method: "POST", body: JSON.stringify({ remove: true, date: "2099-12-13", name: "Elf Fair" }) }), e, ctx());
+  const after = await (await worker.fetch(new Request("https://x.dev/api/events?k=tomy123"), e, ctx())).json();
+  assert.ok(!after.some((x) => x.name === "Elf Fair"));
+});
