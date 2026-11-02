@@ -124,7 +124,7 @@ async function lead(req, env, ctx) {
 async function reportRoute(url, env) {
   if (!env.ADMIN_KEY || url.searchParams.get("key") !== env.ADMIN_KEY) return new Response("Not found", { status: 404 });
   const send = url.searchParams.get("send") === "1";
-  const r = await weeklyReport(env, { send, to: url.searchParams.get("to") || undefined });
+  const r = await weeklyReport(env, { send }); // only ever sends to REPORT_TO
   return new Response(r.html, { headers: { "content-type": "text/html; charset=utf-8" } });
 }
 

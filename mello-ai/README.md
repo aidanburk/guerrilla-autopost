@@ -42,7 +42,7 @@ Pushing to `main` deploys automatically (`.github/workflows/deploy-mello-ai.yml`
 ## Checking it
 
 - Preview the Monday email: `https://mello-ai.<you>.workers.dev/report?key=<MELLO_ADMIN_KEY>`
-- Send it now to yourself: add `&send=1&to=you@example.com`
+- Send it now (to `MELLO_REPORT_TO`): add `&send=1`
 - Tests: `cd mello-ai && npm ci && npm test`
 
 ## Handoff to Mello
