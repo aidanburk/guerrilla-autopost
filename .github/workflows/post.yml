@@ -1,7 +1,7 @@
 name: Post today
 on:
   schedule:
-    - cron: "0 16 * * *"   # about 12 PM Eastern (11 AM in winter)
+    - cron: "0 13 * * *"   # 8 AM Eastern; GitHub usually starts it 3-4h late, so it lands around noon
   workflow_dispatch:
     inputs:
       date: { description: "Post a specific date (YYYY-MM-DD), blank = today", required: false }
