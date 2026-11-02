@@ -45,4 +45,6 @@ Pushing to `main` deploys automatically (`.github/workflows/deploy-mello-ai.yml`
 
 ## Handoff to Mello
 
-In Cloudflare (*Manage account → Members*) and in Resend (*Team*), invite `melloholdingsllc@gmail.com` as admin. After Tomy accepts, remove yourself. Change `MELLO_LEAD_TO` and `MELLO_REPORT_TO` to the Mello Gmail if they aren't already.
+Nothing to hand over. Everything stays on Aidan's free accounts and costs $0, and Tomy has nothing to set up or log into. He sees the chat on his site, gets request emails, and gets the Monday email. To go live for him, set the `MELLO_LEAD_TO` and `MELLO_REPORT_TO` secrets to `melloholdingsllc@gmail.com` and re-run the deploy.
+
+If it ever needs to move to an account Mello owns, they create a free Cloudflare account, you swap `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, re-run the deploy, and update the script address in Framer.
