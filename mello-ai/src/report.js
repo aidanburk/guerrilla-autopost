@@ -1,5 +1,7 @@
 // Tomy's Monday email. Numbers come straight from the sources and are printed by code;
 // the AI only writes the short "what it means" note and this week's 1-2 to-dos.
+// Mello's Google Analytics home page (property 500464511). Opens in whatever Google account has access.
+export const GA_URL = "https://analytics.google.com/analytics/web/#/p500464511/reports/intelligenthome";
 import { upcomingEvents, prettyDate, allEvents } from "./knowledge.js";
 import { sendEmail, esc } from "./email.js";
 
@@ -178,14 +180,14 @@ function render(s, ai) {
   const section = (title, body) => `<h3 style="color:${C.terra};font-size:16px;margin:22px 0 8px">${title}</h3>${body}`;
 
   let web;
-  if (s.ga.notConnected) web = "<p>Website numbers aren't connected yet.</p>";
-  else if (s.ga.error) web = `<p>Couldn't read website numbers this week.</p>`;
+  const gaLink = `<p style="margin:8px 0 0"><a href="${GA_URL}" style="color:${C.terra};font-weight:700">See your website numbers in Google Analytics &rarr;</a></p>`;
+  if (s.ga.notConnected || s.ga.error) web = gaLink;
   else {
     const src = s.ga.sources.map(([n, v]) => `${esc(SOURCE_NAMES[n] || n)} ${v}`).join(", ");
     web = `<ul style="padding-left:18px;margin:0">
       ${li(`<b>${s.ga.visits}</b> visits to melloteas.com${change(s.ga.visits, s.ga.visitsLastWeek)}`)}
       ${li(`<b>${s.ga.shopClicks}</b> clicks into your shop${change(s.ga.shopClicks, s.ga.shopClicksLastWeek)}`)}
-      ${src ? li(`Where they came from: ${src}`) : ""}</ul>`;
+      ${src ? li(`Where they came from: ${src}`) : ""}</ul>${gaLink}`;
   }
   let insta = "";
   if (!s.ig.notConnected && !s.ig.error) insta = `<ul style="padding-left:18px;margin:6px 0 0">${li(`<b>${s.ig.postsThisWeek}</b> Instagram posts went out${s.ig.followers != null ? `, <b>${s.ig.followers}</b> followers` : ""}`)}</ul>`;

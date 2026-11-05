@@ -1,5 +1,6 @@
 // Mello Helper: Tomy's private phone page at /helper?k=<HELPER_KEY>.
 // Requests (with AI-written replies), this week's numbers, and events he can add for the website chat.
+import { GA_URL } from "./report.js";
 import { allEvents, prettyDate } from "./knowledge.js";
 import { gatherStats } from "./report.js";
 import { esc } from "./email.js";
@@ -178,7 +179,7 @@ async function week() {
   const ga = w.ga || {}, ig = w.ig || {};
   const change = (a, b) => b ? (a > b ? "▲ up from " + b : a < b ? "▼ down from " + b : "same as") + " last week" : "";
   view.innerHTML = '<p class="muted" style="margin-top:0">' + fmt(w.range.start) + " to " + fmt(w.range.end) + '</p><div class="grid">' +
-    (ga.notConnected || ga.error ? '<div class="card" style="grid-column:1/-1">Website numbers aren\\'t connected yet.</div>' :
+    (ga.notConnected || ga.error ? '<a class="card" style="grid-column:1/-1;display:block;font-weight:700;color:inherit" href="${GA_URL}" target="_blank" rel="noopener">See your website numbers in Google Analytics &rarr;</a>' :
       '<div class="card"><p class="big">' + ga.visits + '</p>website visits<div class="muted">' + change(ga.visits, ga.visitsLastWeek) + '</div></div>' +
       '<div class="card"><p class="big">' + ga.shopClicks + '</p>clicks into your shop<div class="muted">' + change(ga.shopClicks, ga.shopClicksLastWeek) + '</div></div>') +
     '<div class="card"><p class="big">' + w.leads + '</p>new requests</div>' +

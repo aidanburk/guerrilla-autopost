@@ -109,7 +109,7 @@ test("weekly report prints leads and questions, never invents website numbers", 
   assert.match(r.html, /412-555-0100/);
   assert.match(r.html, /do you ship\?/);
   assert.doesNotMatch(r.html, /ancient question/);
-  assert.match(r.html, /Website numbers aren't connected yet/);
+  assert.match(r.html, /See your website numbers in Google Analytics/);
   assert.deepEqual(sent[0].to, ["tomy@example.com"]);
 });
 
